@@ -70,7 +70,7 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
-        #dest-lang-select {
+        select {
             width: 100%;
             padding: 15px;
             background-color: rgba(0, 123, 255, 0.8);
@@ -124,17 +124,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>AI TEXT TO SPEECH TRANSLATOR</h1>
+        <h1>TEXT TO SPEECH TRANSLATOR</h1>
         <h2>Translate and listen in multiple languages, including Kiswahili!</h2>
 
         <form id="translation-form">
-            <textarea id="text-input" name="text" placeholder="Enter text to translate"></textarea>
-            <select id="dest-lang-select" name="dest_lang">
+            <!-- Source language dropdown -->
+            <select id="src-lang-select" name="src_lang">
+                <option value="auto">Detect Language</option>
                 <option value="en">English</option>
                 <option value="tl">Tagalog (Philippines)</option>
                 <option value="ms">Malay</option>
                 <option value="fr">French</option>
-                <option value="ru">Russian</option> <!-- Added Russian -->
+                <option value="ru">Russian</option>
                 <option value="de">German</option>
                 <option value="zh-cn">Chinese (Simplified)</option>
                 <option value="ja">Japanese</option>
@@ -142,6 +143,23 @@
                 <option value="hi">Hindi</option>
                 <option value="sw">Kiswahili</option>
             </select>
+
+            <!-- Destination language dropdown -->
+            <select id="dest-lang-select" name="dest_lang">
+                <option value="en">English</option>
+                <option value="tl">Tagalog (Philippines)</option>
+                <option value="ms">Malay</option>
+                <option value="fr">French</option>
+                <option value="ru">Russian</option>
+                <option value="de">German</option>
+                <option value="zh-cn">Chinese (Simplified)</option>
+                <option value="ja">Japanese</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="sw">Kiswahili</option>
+            </select>
+
+            <textarea id="text-input" name="text" placeholder="Enter text to translate"></textarea>
             <button type="submit">Translate & Speak</button>
         </form>
 
@@ -150,14 +168,14 @@
         </audio>
 
         <footer>
-            <p>Made with ❤️ by <a href="#">Your Name</a></p>
+            <p>Made with ❤️ by <a href="#">Morgan Anyula</a></p>
         </footer>
     </div>
 
     <script>
         const audioFiles = {};
 
-        function preloadAudio(text, destLang) {
+        function preloadAudio(text, srcLang, destLang) {
             fetch("/", {
                 method: "POST",
                 body: new FormData(document.getElementById("translation-form"))
@@ -177,7 +195,7 @@
             destLangSelect.addEventListener("change", function() {
                 const destLang = this.value;
                 if (!(destLang in audioFiles)) {
-                    preloadAudio(document.getElementById("text-input").value, destLang);
+                    preloadAudio(document.getElementById("text-input").value, document.getElementById("src-lang-select").value, destLang);
                 } else {
                     document.getElementById("audio-player").src = audioFiles[destLang];
                 }
