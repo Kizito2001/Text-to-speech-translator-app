@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Text-to-Speech Translator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #007bff, #28a745, #f39c12);
+            background-size: 400% 400%;
+            animation: gradientAnimation 10s ease infinite;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 30px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            font-size: 18px;
+            font-weight: 400;
+            color: #f1f1f1;
+        }
+
+        #text-input {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 16px;
+        }
+
+        #text-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        #dest-lang-select {
+            width: 100%;
+            padding: 15px;
+            background-color: rgba(0, 123, 255, 0.8);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background-color: #f39c12;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #d87e06;
+        }
+
+        #audio-player {
+            margin-top: 20px;
+            width: 100%;
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        footer a {
+            color: #f39c12;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI TEXT TO SPEECH TRANSLATOR</h1>
+        <h2>Translate and listen in multiple languages, including Kiswahili!</h2>
+
+        <form id="translation-form">
+            <textarea id="text-input" name="text" placeholder="Enter text to translate"></textarea>
+            <select id="dest-lang-select" name="dest_lang">
+                <option value="en">English</option>
+                <option value="tl">Tagalog (Philippines)</option>
+                <option value="ms">Malay</option>
+                <option value="fr">French</option>
+                <option value="ru">Russian</option> <!-- Added Russian -->
+                <option value="de">German</option>
+                <option value="zh-cn">Chinese (Simplified)</option>
+                <option value="ja">Japanese</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="sw">Kiswahili</option>
+            </select>
+            <button type="submit">Translate & Speak</button>
+        </form>
+
+        <audio id="audio-player" controls>
+            Your browser does not support the audio element.
+        </audio>
+
+        <footer>
+            <p>Made with ❤️ by <a href="#">Your Name</a></p>
+        </footer>
+    </div>
+
+    <script>
+        const audioFiles = {};
+
+        function preloadAudio(text, destLang) {
+            fetch("/", {
+                method: "POST",
+                body: new FormData(document.getElementById("translation-form"))
+            })
+            .then(response => response.json())
+            .then(data => {
+                audioFiles[destLang] = data.audio_file;
+                if (document.getElementById("dest-lang-select").value === destLang) {
+                    document.getElementById("audio-player").src = data.audio_file;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const destLangSelect = document.getElementById("dest-lang-select");
+            destLangSelect.addEventListener("change", function() {
+                const destLang = this.value;
+                if (!(destLang in audioFiles)) {
+                    preloadAudio(document.getElementById("text-input").value, destLang);
+                } else {
+                    document.getElementById("audio-player").src = audioFiles[destLang];
+                }
+            });
+        });
+
+        document.getElementById("translation-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            fetch("/", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("audio-player").src = data.audio_file;
+                document.getElementById("audio-player").play();
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
