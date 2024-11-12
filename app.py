@@ -12,18 +12,17 @@ supported_languages = {
     'tl': 'Tagalog (Philippines)',
     'ms': 'Malay (Indonesia, Brunei, Malaysia, and Singapore)',
     'fr': 'French',
-    'ru': 'Russian',  # Added Russian
+    'ru': 'Russian',
     'de': 'German',
     'zh-cn': 'Chinese (Simplified)',
     'ja': 'Japanese',
     'ar': 'Arabic',
     'hi': 'Hindi',
-    'sw': 'Kiswahili'  # Kiswahili language added
+    'sw': 'Kiswahili'
 }
 
 def translate_text(text, src_lang, dest_lang):
     translator = Translator()
-    # Detect source language automatically if 'auto' is selected
     translated = translator.translate(text, src=src_lang if src_lang != 'auto' else None, dest=dest_lang)
     return translated.text
 
@@ -39,12 +38,16 @@ def home():
         text = request.form['text']
         src_lang = request.form['src_lang']
         dest_lang = request.form['dest_lang']
-        translated_text = translate_text(text, src_lang, dest_lang)
-        audio_file = translate_text_to_speech(translated_text, dest_lang)
-        return jsonify({'audio_file': audio_file, 'translated_text': translated_text})
-    return render_template('index.html', supported_languages=supported_languages)
+        
+        try:
+            translated_text = translate_text(text, src_lang, dest_lang)
+            audio_file = translate_text_to_speech(translated_text, dest_lang)
+            return jsonify({'translated_text': translated_text, 'audio_file': '/' + audio_file})
+        except Exception as e:
+            return jsonify({'error': str(e)})
+    return render_template('index.html')
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Use the port specified by Render or default to 5000
-    app.run(host='0.0.0.0', port=port, debug=True)
-
+    if not os.path.exists('static'):
+        os.mkdir('static')
+    app.run(debug=True)
