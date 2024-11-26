@@ -113,14 +113,25 @@
         }
 
         footer a {
-            color: black; /* Set color to black */
+            color: black;
             text-decoration: none;
-            font-size: 30px; /* Increased font size */
-            font-weight: bold; /* Made text bold */
+            font-size: 30px;
+            font-weight: bold;
         }
 
         footer a:hover {
             text-decoration: underline;
+        }
+
+        #translated-text {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #fff;
+            font-weight: 600;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            white-space: pre-wrap; /* This allows the translated text to wrap */
         }
     </style>
 </head>
@@ -163,6 +174,8 @@
             <button type="submit">Translate & Speak</button>
         </form>
 
+        <div id="translated-text" style="display:none;"></div> <!-- Hidden initially -->
+
         <audio id="audio-player" controls>
             Your browser does not support the audio element.
         </audio>
@@ -173,44 +186,21 @@
     </div>
 
     <script>
-        const audioFiles = {};
-
-        function preloadAudio(text, srcLang, destLang) {
-            fetch("/", {
-                method: "POST",
-                body: new FormData(document.getElementById("translation-form"))
-            })
-            .then(response => response.json())
-            .then(data => {
-                audioFiles[destLang] = data.audio_file;
-                if (document.getElementById("dest-lang-select").value === destLang) {
-                    document.getElementById("audio-player").src = data.audio_file;
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const destLangSelect = document.getElementById("dest-lang-select");
-            destLangSelect.addEventListener("change", function() {
-                const destLang = this.value;
-                if (!(destLang in audioFiles)) {
-                    preloadAudio(document.getElementById("text-input").value, document.getElementById("src-lang-select").value, destLang);
-                } else {
-                    document.getElementById("audio-player").src = audioFiles[destLang];
-                }
-            });
-        });
-
         document.getElementById("translation-form").addEventListener("submit", function(event) {
             event.preventDefault();
             var formData = new FormData(this);
-            fetch("/", {
+            fetch("/translate", {
                 method: "POST",
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
+                // Display the translated text
+                var translatedText = data.translated_text; // Ensure 'translated_text' is sent in the response
+                document.getElementById("translated-text").innerText = translatedText;
+                document.getElementById("translated-text").style.display = "block"; // Show the translated text
+
+                // Ensure audio playback
                 document.getElementById("audio-player").src = data.audio_file;
                 document.getElementById("audio-player").play();
             })
